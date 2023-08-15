@@ -1,24 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
 
 function App() {
+  const [data, setData] = useState([]); //to retrieve from query
+  const [authorNameInput, setAuthorName] = useState('')
+
+  const handleInputChange = (event) => {
+    setAuthorName(event.target.value);
+  };
+
+  const handleSubmit = () => {
+    fetch(`http://localhost:1234/api/author?name=${encodeURIComponent(authorNameInput)}`)
+      .then((response) => response.json())
+      .then((data) => setData(data))
+      .catch((error) => console.error('Error fetching data:', error));
+  };
+
+  // useEffect(() => {
+  //   fetch('http://localhost:1234/api/author_papers')
+  //     .then((response) => response.json())
+  //     .then((data) => setData(data))
+  //     .catch((error) => console.error('Error fetching data:', error));
+  // }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Author List</h1>
+
+      <input type="text" placeholder="Enter author name" value={authorNameInput} onChange={handleInputChange} />
+      <button onClick={handleSubmit}>Search</button>
+
+    
+      <ul>
+      {data.map((user) => (
+        <li>
+          <strong>Name: </strong> {user.author_names}{'\n'}
+          <strong> Paper Doi: </strong> {user.paper_doi} {'\n'}
+          <strong> Affiliation: </strong> {user.Affiliation} {'\n'}
+
+        </li>
+      ))}
+    </ul>
+
     </div>
+
   );
 }
 
