@@ -19,7 +19,7 @@ app.use(cors());
 app.get('/api/author', (req, res) => {
     const authorName = req.query.name;
   
-    db.all('SELECT DISTINCT t2.author_names, t2.paper_doi, t2. affiliation FROM author_paper_position_affiliation t1 JOIN author_paper_position_affiliation t2 ON t1.paper_doi = t2.paper_doi WHERE t1.author_names = ?;', [authorName], (err, rows) => {
+    db.all('SELECT DISTINCT t2.author_names, t2.paper_doi, t2. affiliation FROM author_paper_position_affiliation t1 JOIN author_paper_position_affiliation t2 ON t1.paper_doi = t2.paper_doi WHERE t1.author_names = ? AND t2.author_names <> ? ;', [authorName, authorName], (err, rows) => {
         if (err) {
         res.status(500).json({ error: err.message });
         } else {
