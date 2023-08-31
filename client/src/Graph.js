@@ -1,11 +1,9 @@
-// import React from "react";
 import React, { useEffect, useState } from "react";
 import Graph from "graphology";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl, useLoadGraph } from "@react-sigma/core";
 import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import "@react-sigma/core/lib/react-sigma.min.css";
-
 
 
 const DemoGraph = ({jsonData, name}) => {
@@ -19,22 +17,24 @@ const DemoGraph = ({jsonData, name}) => {
             let count = 0
             graph.addNode(count, {
                 label: name,
-                size: 10,
+                 size: 10,
                 x: 0,
                 y: 0,
             });
             
-            jsonData.forEach((co_author) => {
+            jsonData.forEach((user) => {
                 count ++;
                 graph.addNode(count, {
-                    label: co_author.author_names,
-                    size: 100,
-                    x: count + 1,
-                    y: count + 20,
+                    label: user.co_author,
+                    size: 10,
+                    x: count + 11,
+                    y: count + 10,
+                    shared_papers: user.shared_paper_ids,
+                    affiliation: user.affiliation,
                 });
-                graph.addEdge(0, count)
+                graph.addEdge(0, count, {size : user.co_authorship_count})
             })
-            
+        
     
             loadGraph(graph);
             positions()
@@ -78,6 +78,9 @@ const DemoGraph = ({jsonData, name}) => {
 };
 
 export default DemoGraph;
+
+
+
 
 
 
