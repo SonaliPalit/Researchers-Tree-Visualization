@@ -16,40 +16,57 @@ app.use(cors());
 // });
 
 //Endpoint that queries sqlite database and sends the data to the front end as json
+//use self-joins - t1,t2
 app.get('/api/author', (req, res) => {
-    const authorName = req.query.name;
+  const authorName = req.query.name;
+  const query = `
+  SELECT a1.author_names AS author_name,
+  a2.author_names AS co_author,
+  a2.Affiliation AS affiliation,
+  GROUP_CONCAT(DISTINCT a1.paper_doi ) AS shared_paper_ids,
+  COUNT(DISTINCT a1.paper_doi) AS co_authorship_count
+  FROM author_paper_position_affiliation a1
+  JOIN author_paper_position_affiliation a2 ON a1.paper_doi = a2.paper_doi
+  WHERE a1.author_names = ? AND a2.author_names <> ?
+  GROUP BY a1.author_names, a2.author_names;
+  `;
   
-    db.all('SELECT DISTINCT t2.author_names, t2.paper_doi, t2. affiliation FROM author_paper_position_affiliation t1 JOIN author_paper_position_affiliation t2 ON t1.paper_doi = t2.paper_doi WHERE t1.author_names = ? AND t2.author_names <> ? ;', [authorName, authorName], (err, rows) => {
-        if (err) {
-        res.status(500).json({ error: err.message });
-        } else {
-        res.json(rows);
-        }
-    });
+  db.all(query, [authorName, authorName], (err, rows) => {
+      if (err) {
+      res.status(500).json({ error: err.message });
+      } else {
+      res.json(rows);
+      }
   });
+});
+
+
+// app.get('/api/author', (req, res) => {
+//     const authorName = req.query.name;
+  
+//     db.all('SELECT DISTINCT t2.author_names, t2.paper_doi, t2. affiliation FROM author_paper_position_affiliation t1 JOIN author_paper_position_affiliation t2 ON t1.paper_doi = t2.paper_doi WHERE t1.author_names = ? AND t2.author_names <> ? ;', [authorName, authorName], (err, rows) => {
+//         if (err) {
+//         res.status(500).json({ error: err.message });
+//         } else {
+//         res.json(rows);
+//         }
+//     });
+//   });
+
+  // app.get('/api', (req, res) => {
+  //   const authorName = req.query.name;
+  
+  //   db.all('SELECT DISTINCT t2.author_names, t2.paper_doi, t2. affiliation FROM author_paper_position_affiliation t1 JOIN author_paper_position_affiliation t2 ON t1.paper_doi = t2.paper_doi;', (err, rows) => {
+  //       if (err) {
+  //       res.status(500).json({ error: err.message });
+  //       } else {
+  //       res.json(rows);
+  //       }
+  //   });
+  // });
 
 const PORT = 1234;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-//let storedName = ""
-// app.post('/api/set_author_name', (req, res) => {
-//     const { name } = req.body;
-//     if (name) {
-//       storedName = name;
-//       res.json({ message: `Successfully stored name: ${storedName}` });
-//     } else {
-//       res.status(400).json({ error: 'Name is required' });
-//     }
-//   });
-
-// app.get('/api/author', (req, res) => {
-//   db.all('SELECT DISTINCT t2.author_names, t2.paper_doi, t2. affiliation FROM author_paper_position_affiliation t1 JOIN author_paper_position_affiliation t2 ON t1.paper_doi = t2.paper_doi WHERE t1.author_names = ? AND t2.author_names <> "Kelly Pennock";', [storedName], (err, rows) => {
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//     } else {
-//       res.json(rows);
-//     }
-//   });
-// });
