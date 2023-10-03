@@ -6,53 +6,57 @@ function App() {
   const [allData, setAllData] = useState([])
   const [data, setData] = useState([]); //to retrieve from query
   const [authorNameInput, setAuthorName] = useState('')
-  const [visFunc, setVis] = useState('') //hook for graph function
-  const [fullVisFunc, fullSetVis] = useState('') //hook for graph function
+
+  const handleFullGraph =  () => {
+    fetch(`http://localhost:1234/api`)
+    .then((response) => response.json())
+    .then((data) => setAllData(data))
+    .catch((error) => console.error('Error fetching data:', error));
+
+  }
+
+  const fullGraphVis = () => {
+    return (
+      <div>
+      {allData.length > 0 && <FullGraph jsonData = {allData} /> }
+      </div>
+    );
+  }
 
 
   const handleInputChange = (event) => {
     setAuthorName(event.target.value);
   };
 
+
   const handleSubmitAuthor = () => {
     fetch(`http://localhost:1234/api/author?name=${encodeURIComponent(authorNameInput)}`)
-      .then((response) => response.json())
-      .then((data) => setData(data))
-      .catch((error) => console.error('Error fetching data:', error));
+    .then((response) => response.json())
+    .then((data) => setData(data))
+    .catch((error) => console.error('Error fetching data:', error));
+
   };
 
   const graphVis =  () => {
     return (
       <div>
-      <Graph jsonData = {data} name = {authorNameInput} />
+        {/* dont display anything if data not yet filled */}
+        {data.length > 0 && <Graph jsonData={data} name={authorNameInput} />} 
       </div>
     );
   }
-  const fullGraphVis =  () => {
-    fetch(`http://localhost:1234/api`)
-    .then((response) => response.json())
-    .then((data) => setAllData(data))
-    .catch((error) => console.error('Error fetching data:', error));
-
-    return (
-      <div className = "graph-container">
-      <FullGraph jsonData = {allData}  />
-      </div>
-    );
-  }
-
-  const handleVis = () => {
-    setVis(graphVis)
-  }
-
 
   return (
     <div>
-    
 
       <input type="text" placeholder="Enter author name" value={authorNameInput} onChange={handleInputChange} />
       <button onClick={handleSubmitAuthor}>Search</button>
-      <ol>
+
+      <button onClick={handleFullGraph}>FullGraph</button>
+      {fullGraphVis()}
+      {graphVis()}
+      
+      {/* <ol>
       {data.map((user) => (
         <li>
           <strong>Author Name: </strong> {user.author_name}{'\n'}
@@ -62,10 +66,9 @@ function App() {
         </li>       
       ))}
        
-    </ol>
+    </ol> */}
 
-    <button onClick={handleVis}>Visualize!</button>
-    {visFunc}
+    {/* <button onClick={handleVis}>Visualize!</button> */}
   
     </div>
 
