@@ -41,7 +41,9 @@ function App() {
     return (
       <div>
         {/* dont display anything if data not yet filled */}
-        {data.length > 0 && <Graph jsonData={data} name={authorNameInput} />} 
+        {console.log(data)}
+        {localStorage.setItem("authorData", JSON.stringify(data))}
+        {data.length > 0 && <Graph name={authorNameInput} />} 
       </div>
     );
   }

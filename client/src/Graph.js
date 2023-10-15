@@ -8,6 +8,8 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
 import Modal from "react-modal";
+import { GraphDefault } from "./GraphDefault";
+import { useWorkerLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 Modal.setAppElement('#root')
 
 
@@ -16,185 +18,31 @@ const RED = "#b22222";
 const ORANGE = "#ff7f50";
 const GRAY = "#E2E2E2";
 
+const colors =["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949","#af7aa1","#ff9da7","#9c755f","#bab0ab"]
 
-const AuthorGraph = ({jsonData, name}) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState({label : "", size: 0, x : 0, y: 0, author_name: "", color: "", shared_papers : "", count_papers: 0});
-    const customStyles = {
-      content: {
-        top: "50%",
-        left: "50%",
-        right: "auto",
-        bottom: "auto",
-        marginRight: "-50%",
-        transform: "translate(-50%, -50%)",
-        backgroundColor: "white",
-        width: 400,
-      },
-    };
 
-    const ForceGraph = () => {
-        const { positions, assign } = useLayoutForceAtlas2();
-        const loadGraph = useLoadGraph();
-        const registerEvents = useRegisterEvents();
+export const AuthorGraph = ({ name}) => {
+  const Fa2 = () => {
+    const { start, kill, isRunning } = useWorkerLayoutForceAtlas2({ settings: { slowDown: 10 } });
 
-        const setSettings = useSetSettings();
-        const [hoveredNode, setHoveredNode] = useState(null);
-        const sigma = useSigma();
-        
-      
-
-        useEffect(() => {
-            const graph = new Graph();
-            let count = 0
-            let authors = new Set();
-            console.log("start graph")
-            
-            jsonData.forEach((user) => {
-                if (!(authors.has(user.author1))){
-                  count++
-                  graph.addNode(user.author1, {
-                    label: user.author1,
-                    size: 20,
-                    x: count + 12,
-                    y: count + 10,
-                    author_name: user.author1,
-                    color: ORANGE,
-                    count_papers : user.count_paper
-                    //shared_papers: user.shared_paper_ids,
-                    // affiliation: user.affiliation, 
-                  });
-                  authors.add(user.author1) 
-                }
-                if (!(authors.has(user.author2))){
-                  count++
-                  graph.addNode(user.author2, {
-                    label: user.author2,
-                    size: 20,
-                    x: count + 12,
-                    y: count + 10,
-                    author_name: user.author2,
-                    color: ORANGE,
-                    count_papers : user.count_paper
-                    //shared_papers: user.shared_paper_ids,
-                    // affiliation: user.affiliation, 
-                  });
-                  authors.add(user.author2) 
-                }
-                graph.addEdge(user.author1, user.author2, {color: GRAY ,size : user.count_paper*1.25})
-                
-            })
-            
-
-            loadGraph(graph);
-            console.log("load graph")
-            assign();
-            console.log(graph)
-
-            registerEvents({
-              clickNode: (event) => {
-                console.log("click node")
-                const clickedNode = event.node;
-                setModalContent(graph.getNodeAttributes(clickedNode));
-                setIsModalOpen(true);
-                
-                
-              },
-              enterNode: (event) => {
-                setHoveredNode(event.node)
-                console.log("hoveredNode, enter", hoveredNode)
-               
-                
-              },
-              leaveNode: () => {
-                setHoveredNode(null)
-                console.log("hovernode, leave", hoveredNode)
-                
-              },
-
-            });
-          }, [assign, loadGraph, registerEvents, hoveredNode, sigma]);
-
-          useEffect(() => {
-            setSettings({
-              nodeReducer: (node, data) => {
-                const graph = sigma.getGraph();
-                const newData = { ...data, highlighted: data.highlighted || false };
-        
-                if (hoveredNode) {
-                  if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
-                    newData.highlighted = true;
-                    newData.color = RED;
-                  } else {
-                    newData.color = GRAY;
-                    newData.highlighted = false;
-                  }
-                }
-                // if (hoveredEdgeConnectedNodes && hoveredEdgeConnectedNodes.includes(node)) { // Check if the node is connected to the hovered edge
-                //   newData.highlighted = true;
-                //   newData.color = RED; // Set the color for connected nodes
-                // }
-                return newData;
-              },
-              edgeReducer: (edge, data) => {
-                const graph = sigma.getGraph();
-                const newData = { ...data, hidden: false};
-                // console.log(data)
-        
-                if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
-                  newData.hidden = true;
-                }
-                // if (hoveredEdge){
-                //   if (edge === hoveredEdge) {
-                //     newData.color = RED; 
-                //   } 
-                // }
-  
-                return newData;
-              }
-            });
-          }, [setSettings, hoveredNode, sigma])
+    useEffect(() => {
+      // start FA2
+      start();
+      return () => {
+        // Kill FA2 on unmount
+        kill();
+      };
+    }, [start, kill]);
 
     return null;
-    };
+  };
 
   return (
-    <div>
-      <SigmaContainer
-        style={{ height: "800px", width: "1500px" }}
-        settings={{
-          nodeProgramClasses: { image: getNodeProgramImage() },
-          defaultNodeType: "image",
-          labelDensity: 0.07,
-          labelGridCellSize: 60,
-          labelRenderedSizeThreshold: 15,
-          labelFont: "Lato, sans-serif",
-          zIndex: true,
-        }}
-      >
-        <ControlsContainer position={"bottom-left"}>
-          <ZoomControl />
-          <FullScreenControl />
-          <LayoutForceAtlas2Control />
-        </ControlsContainer>
-        <ControlsContainer position={"top-left"}>
-          <SearchControl style={{ width: "200px" }} />
-        </ControlsContainer>
-        <ForceGraph />
-      </SigmaContainer>
-      <Modal isOpen = {isModalOpen} onRequestClose={() => setIsModalOpen(false)} style={customStyles}>
-        <h2>Info</h2>
-        <div> <p> Author Name : {modalContent.label} </p>
-              <p>No. of papers shared with {name} : {modalContent.count_papers}</p>
-         </div>
-        <button onClick={() => setIsModalOpen(false)}>Close</button>
-
-      </Modal>
-
-
-    </div>
+    <SigmaContainer style={{ height: "500px" }}>
+      <GraphDefault order={100} probability={0.1} />
+      <Fa2 />
+    </SigmaContainer>
   );
-   
 };
 
 export default AuthorGraph;
