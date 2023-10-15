@@ -8,6 +8,7 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
 import Modal from "react-modal";
+import {graph} from "./CreateGraph";
 Modal.setAppElement('#root')
 
 
@@ -34,127 +35,89 @@ const AuthorGraph = ({jsonData, name}) => {
     };
 
     const ForceGraph = () => {
-        const { positions, assign } = useLayoutForceAtlas2();
-        const loadGraph = useLoadGraph();
-        const registerEvents = useRegisterEvents();
-
-        const setSettings = useSetSettings();
-        const [hoveredNode, setHoveredNode] = useState(null);
-        const sigma = useSigma();
-        
+      const { positions, assign } = useLayoutForceAtlas2();
+      const loadGraph = useLoadGraph();
+      const registerEvents = useRegisterEvents();
+    
+      const setSettings = useSetSettings();
+      const [hoveredNode, setHoveredNode] = useState(null);
+      const sigma = useSigma();
+    
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [modalContent, setModalContent] = useState({label : "", size: 0, x : 0, y: 0, author_name: "", color: "", shared_papers : "", count_papers: 0});
       
-
+    
+      useEffect(() => {
+    
+          loadGraph(graph);
+          console.log("load graph")
+          assign();
+          console.log(graph)
+    
+          registerEvents({
+            clickNode: (event) => {
+              console.log("click node")
+              const clickedNode = event.node;
+              setModalContent(graph.getNodeAttributes(clickedNode));
+              setIsModalOpen(true);
+              
+              
+            },
+            enterNode: (event) => {
+              setHoveredNode(event.node)
+              console.log("hoveredNode, enter", hoveredNode)
+             
+              
+            },
+            leaveNode: () => {
+              setHoveredNode(null)
+              console.log("hovernode, leave", hoveredNode)
+              
+            },
+    
+          });
+        }, [assign, loadGraph, registerEvents, hoveredNode, sigma]);
+    
         useEffect(() => {
-            const graph = new Graph();
-            let count = 0
-            let authors = new Set();
-            console.log("start graph")
-            
-            jsonData.forEach((user) => {
-                if (!(authors.has(user.author1))){
-                  count++
-                  graph.addNode(user.author1, {
-                    label: user.author1,
-                    size: 20,
-                    x: count + 12,
-                    y: count + 10,
-                    author_name: user.author1,
-                    color: ORANGE,
-                    count_papers : user.count_paper
-                    //shared_papers: user.shared_paper_ids,
-                    // affiliation: user.affiliation, 
-                  });
-                  authors.add(user.author1) 
+          setSettings({
+            nodeReducer: (node, data) => {
+              const graph = sigma.getGraph();
+              const newData = { ...data, highlighted: data.highlighted || false };
+      
+              if (hoveredNode) {
+                if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
+                  newData.highlighted = true;
+                  newData.color = RED;
+                } else {
+                  newData.color = GRAY;
+                  newData.highlighted = false;
                 }
-                if (!(authors.has(user.author2))){
-                  count++
-                  graph.addNode(user.author2, {
-                    label: user.author2,
-                    size: 20,
-                    x: count + 12,
-                    y: count + 10,
-                    author_name: user.author2,
-                    color: ORANGE,
-                    count_papers : user.count_paper
-                    //shared_papers: user.shared_paper_ids,
-                    // affiliation: user.affiliation, 
-                  });
-                  authors.add(user.author2) 
-                }
-                graph.addEdge(user.author1, user.author2, {color: GRAY ,size : user.count_paper*1.25})
-                
-            })
-            
-
-            loadGraph(graph);
-            console.log("load graph")
-            assign();
-            console.log(graph)
-
-            registerEvents({
-              clickNode: (event) => {
-                console.log("click node")
-                const clickedNode = event.node;
-                setModalContent(graph.getNodeAttributes(clickedNode));
-                setIsModalOpen(true);
-                
-                
-              },
-              enterNode: (event) => {
-                setHoveredNode(event.node)
-                console.log("hoveredNode, enter", hoveredNode)
-               
-                
-              },
-              leaveNode: () => {
-                setHoveredNode(null)
-                console.log("hovernode, leave", hoveredNode)
-                
-              },
-
-            });
-          }, [assign, loadGraph, registerEvents, hoveredNode, sigma]);
-
-          useEffect(() => {
-            setSettings({
-              nodeReducer: (node, data) => {
-                const graph = sigma.getGraph();
-                const newData = { ...data, highlighted: data.highlighted || false };
-        
-                if (hoveredNode) {
-                  if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
-                    newData.highlighted = true;
-                    newData.color = RED;
-                  } else {
-                    newData.color = GRAY;
-                    newData.highlighted = false;
-                  }
-                }
-                // if (hoveredEdgeConnectedNodes && hoveredEdgeConnectedNodes.includes(node)) { // Check if the node is connected to the hovered edge
-                //   newData.highlighted = true;
-                //   newData.color = RED; // Set the color for connected nodes
-                // }
-                return newData;
-              },
-              edgeReducer: (edge, data) => {
-                const graph = sigma.getGraph();
-                const newData = { ...data, hidden: false};
-                // console.log(data)
-        
-                if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
-                  newData.hidden = true;
-                }
-                // if (hoveredEdge){
-                //   if (edge === hoveredEdge) {
-                //     newData.color = RED; 
-                //   } 
-                // }
-  
-                return newData;
               }
-            });
-          }, [setSettings, hoveredNode, sigma])
-
+              // if (hoveredEdgeConnectedNodes && hoveredEdgeConnectedNodes.includes(node)) { // Check if the node is connected to the hovered edge
+              //   newData.highlighted = true;
+              //   newData.color = RED; // Set the color for connected nodes
+              // }
+              return newData;
+            },
+            edgeReducer: (edge, data) => {
+              const graph = sigma.getGraph();
+              const newData = { ...data, hidden: false};
+              // console.log(data)
+      
+              if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
+                newData.hidden = true;
+              }
+              // if (hoveredEdge){
+              //   if (edge === hoveredEdge) {
+              //     newData.color = RED; 
+              //   } 
+              // }
+    
+              return newData;
+            }
+          });
+        }, [setSettings, hoveredNode, sigma])
+    
     return null;
     };
 
