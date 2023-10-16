@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Graph from './Graph';
 import FullGraph from './FullGraph'
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 function App() {
   const [allData, setAllData] = useState([])

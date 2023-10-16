@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Dropdown from 'react-bootstrap/Dropdown';
 import Graph from "graphology";
 import Sigma from "sigma";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
@@ -10,12 +11,10 @@ import throttle from 'lodash/throttle';
 import Modal from "react-modal";
 Modal.setAppElement('#root')
 
-
-
 const RED = "#b22222";
 const ORANGE = "#ff7f50";
 const GRAY = "#E2E2E2";
-
+const BLUE = "#00FFFF";
 
 const AuthorGraph = ({jsonData, name}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +31,7 @@ const AuthorGraph = ({jsonData, name}) => {
         width: 400,
       },
     };
+    const [selectedOption, setSelectedOption] = useState(null);
 
     const ForceGraph = () => {
         const { positions, assign } = useLayoutForceAtlas2();
@@ -40,10 +40,13 @@ const AuthorGraph = ({jsonData, name}) => {
 
         const setSettings = useSetSettings();
         const [hoveredNode, setHoveredNode] = useState(null);
+
+        // to change one node's color
+        // copy from click node and hovered node
+        const [changeNodeColor, setNodeColor] = useState(null);
+
         const sigma = useSigma();
         
-      
-
         useEffect(() => {
             const graph = new Graph();
             let count = 0
@@ -97,21 +100,15 @@ const AuthorGraph = ({jsonData, name}) => {
                 const clickedNode = event.node;
                 setModalContent(graph.getNodeAttributes(clickedNode));
                 setIsModalOpen(true);
-                
-                
               },
               enterNode: (event) => {
                 setHoveredNode(event.node)
                 console.log("hoveredNode, enter", hoveredNode)
-               
-                
               },
               leaveNode: () => {
                 setHoveredNode(null)
                 console.log("hovernode, leave", hoveredNode)
-                
               },
-
             });
           }, [assign, loadGraph, registerEvents, hoveredNode, sigma]);
 
@@ -129,6 +126,18 @@ const AuthorGraph = ({jsonData, name}) => {
                     newData.color = GRAY;
                     newData.highlighted = false;
                   }
+                }
+                else if (selectedOption) {
+                  // Set node color based on selected option
+                    if (selectedOption === "PhD Student") {
+                      newData.color = BLUE;
+                    } 
+                    else if (selectedOption === "Associate Professor") {
+                      newData.color = BLUE;
+                    } 
+                    else if (selectedOption === "Post Graduate Researcher") {
+                      newData.color = BLUE;
+                    }
                 }
                 // if (hoveredEdgeConnectedNodes && hoveredEdgeConnectedNodes.includes(node)) { // Check if the node is connected to the hovered edge
                 //   newData.highlighted = true;
@@ -186,12 +195,23 @@ const AuthorGraph = ({jsonData, name}) => {
         <h2>Info</h2>
         <div> <p> Author Name : {modalContent.label} </p>
               <p>No. of papers shared with {name} : {modalContent.count_papers}</p>
+              <Dropdown>
+                <Dropdown.Toggle variant="success" id="dropdown-basic">Dropdown Button</Dropdown.Toggle>
+                <Dropdown.Menu>
+                <Dropdown.Item onClick={() => {
+                  setSelectedOption("PhD");
+                  }}>PhD</Dropdown.Item>
+                <Dropdown.Item onClick={() => {
+                    setSelectedOption("researcher");
+                }}>Researcher</Dropdown.Item>
+                <Dropdown.Item onClick={() => {
+                    setSelectedOption("student");
+                }}>Student</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
          </div>
         <button onClick={() => setIsModalOpen(false)}>Close</button>
-
       </Modal>
-
-
     </div>
   );
    
