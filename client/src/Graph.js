@@ -18,7 +18,7 @@ const BLUE = "#00FFFF";
 
 const AuthorGraph = ({jsonData, name}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState({label : "", size: 0, x : 0, y: 0, author_name: "", color: "", shared_papers : "", count_papers: 0});
+    const [modalContent, setModalContent] = useState({label : "", size: 0, x : 0, y: 0, author_name: "", color: "", shared_papers : "", count_papers: 0, selectedOption: "",});
     const customStyles = {
       content: {
         top: "50%",
@@ -41,10 +41,6 @@ const AuthorGraph = ({jsonData, name}) => {
         const setSettings = useSetSettings();
         const [hoveredNode, setHoveredNode] = useState(null);
 
-        // to change one node's color
-        // copy from click node and hovered node
-        const [changeNodeColor, setNodeColor] = useState(null);
-
         const sigma = useSigma();
         
         useEffect(() => {
@@ -63,7 +59,8 @@ const AuthorGraph = ({jsonData, name}) => {
                     y: count + 10,
                     author_name: user.author1,
                     color: ORANGE,
-                    count_papers : user.count_paper
+                    count_papers : user.count_paper,
+                    selectedOption: user.selectedOption
                     //shared_papers: user.shared_paper_ids,
                     // affiliation: user.affiliation, 
                   });
@@ -78,7 +75,8 @@ const AuthorGraph = ({jsonData, name}) => {
                     y: count + 10,
                     author_name: user.author2,
                     color: ORANGE,
-                    count_papers : user.count_paper
+                    count_papers : user.count_paper,
+                    selectedOption: user.selectedOption
                     //shared_papers: user.shared_paper_ids,
                     // affiliation: user.affiliation, 
                   });
@@ -88,7 +86,6 @@ const AuthorGraph = ({jsonData, name}) => {
                 
             })
             
-
             loadGraph(graph);
             console.log("load graph")
             assign();
@@ -108,7 +105,7 @@ const AuthorGraph = ({jsonData, name}) => {
               leaveNode: () => {
                 setHoveredNode(null)
                 console.log("hovernode, leave", hoveredNode)
-              },
+              }
             });
           }, [assign, loadGraph, registerEvents, hoveredNode, sigma]);
 
@@ -117,7 +114,7 @@ const AuthorGraph = ({jsonData, name}) => {
               nodeReducer: (node, data) => {
                 const graph = sigma.getGraph();
                 const newData = { ...data, highlighted: data.highlighted || false };
-        
+                
                 if (hoveredNode) {
                   if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
                     newData.highlighted = true;
@@ -130,13 +127,14 @@ const AuthorGraph = ({jsonData, name}) => {
                 else if (selectedOption) {
                   // Set node color based on selected option
                     if (selectedOption === "PhD Student") {
-                      newData.color = BLUE;
+                      data.color = BLUE;
+                      console.log(node);
                     } 
                     else if (selectedOption === "Associate Professor") {
-                      newData.color = BLUE;
+                      //newData.color = BLUE;
                     } 
                     else if (selectedOption === "Post Graduate Researcher") {
-                      newData.color = BLUE;
+                      //newData.color = BLUE;
                     }
                 }
                 // if (hoveredEdgeConnectedNodes && hoveredEdgeConnectedNodes.includes(node)) { // Check if the node is connected to the hovered edge
@@ -196,19 +194,20 @@ const AuthorGraph = ({jsonData, name}) => {
         <div> <p> Author Name : {modalContent.label} </p>
               <p>No. of papers shared with {name} : {modalContent.count_papers}</p>
               <Dropdown>
-                <Dropdown.Toggle variant="success" id="dropdown-basic">Dropdown Button</Dropdown.Toggle>
+                <Dropdown.Toggle variant="success" id="dropdown-basic">Research Level</Dropdown.Toggle>
                 <Dropdown.Menu>
                 <Dropdown.Item onClick={() => {
-                  setSelectedOption("PhD");
-                  }}>PhD</Dropdown.Item>
+                  setSelectedOption("PhD Student");
+                  }}>PhD Student</Dropdown.Item>
                 <Dropdown.Item onClick={() => {
-                    setSelectedOption("researcher");
-                }}>Researcher</Dropdown.Item>
+                    setSelectedOption("Associate Professor");
+                }}>Associate Professor</Dropdown.Item>
                 <Dropdown.Item onClick={() => {
-                    setSelectedOption("student");
-                }}>Student</Dropdown.Item>
+                    setSelectedOption("Post Graduate Researcher");
+                }}>Post Graduate Researcher</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
+              <p>{selectedOption}</p>
          </div>
         <button onClick={() => setIsModalOpen(false)}>Close</button>
       </Modal>
