@@ -9,8 +9,8 @@ import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/lay
 import "@react-sigma/core/lib/react-sigma.min.css";
 import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
-import Modal from "react-modal";
-Modal.setAppElement('#root')
+import NodeModal from "./NodeModal";
+
 
 
 const RED = "#b22222";
@@ -22,19 +22,8 @@ const AuthorGraph = ({jsonData, name}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({label : "", size: 0, x : 0, y: 0, author_name: "", color: "", shared_papers : "", count_papers: 0, selectedOption: "",});
     // const [graph, setGraph] = useState(null); 
-    const customStyles = {
-      content: {
-        top: "50%",
-        left: "50%",
-        right: "auto",
-        bottom: "auto",
-        marginRight: "-50%",
-        transform: "translate(-50%, -50%)",
-        backgroundColor: "white",
-        width: 400,
-      },
-    };
     const [selectedOption, setSelectedOption] = useState(null);
+    const [clickedNode, setClickedNode] = useState(null);
     
 
     const ForceGraph = () => {
@@ -46,8 +35,6 @@ const AuthorGraph = ({jsonData, name}) => {
         const [hoveredNode, setHoveredNode] = useState(null);
 
         const sigma = useSigma();
-        
-        
 
         useEffect(() => {
           // setGraph(create_graph);
@@ -61,9 +48,13 @@ const AuthorGraph = ({jsonData, name}) => {
           registerEvents({
             clickNode: (event) => {
               console.log("click node")
-              const clickedNode = event.node;
-              setModalContent(graph.getNodeAttributes(clickedNode));
+              setClickedNode(event.node)
+              setSelectedOption(null)
+              setModalContent(graph.getNodeAttributes(event.node));
               setIsModalOpen(true);
+              
+            
+
             },
             enterNode: (event) => {
               setHoveredNode(event.node)
@@ -91,22 +82,20 @@ const AuthorGraph = ({jsonData, name}) => {
                   newData.highlighted = false;
                 }
               }
-              else if (selectedOption) {
-                // Set node color based on selected option
-                  if (selectedOption === "PhD Student") {
-                    data.color = BLUE;
-                    console.log(node);
-                  } 
-                  else if (selectedOption === "Associate Professor") {
-                    //newData.color = BLUE;
-                  } 
-                  else if (selectedOption === "Post Graduate Researcher") {
-                    //newData.color = BLUE;
-                  }
-              }
-              // if (hoveredEdgeConnectedNodes && hoveredEdgeConnectedNodes.includes(node)) { // Check if the node is connected to the hovered edge
-              //   newData.highlighted = true;
-              //   newData.color = RED; // Set the color for connected nodes
+              // else if (selectedOption) {
+              //   // Set node color based on selected option
+              //     if (selectedOption === "PhD Student") {
+              //       data.color = BLUE;
+              //       console.log(node);
+              //     } 
+              //     else if (selectedOption === "Associate Professor") {
+              //       //newData.color = BLUE;
+              //     } 
+              //     else if (selectedOption === "Post Graduate Researcher") {
+              //       //newData.color = BLUE;
+              //     }
+              // }
+              
               // }
               return newData;
             },
@@ -127,7 +116,23 @@ const AuthorGraph = ({jsonData, name}) => {
               return newData;
             } 
           });
-        }, [setSettings, hoveredNode, sigma])
+        }, [setSettings, hoveredNode, sigma]);
+
+        useEffect(() => {
+          if (selectedOption) {
+            // Set node color based on selected option
+              if (selectedOption === "PhD Student") {
+                graph.setNodeAttribute(clickedNode, 'color', BLUE);
+                console.log("selescted option blue")
+              } 
+              else if (selectedOption === "Associate Professor") {
+                graph.setNodeAttribute(clickedNode, 'color', RED);
+              } 
+              else if (selectedOption === "Post Graduate Researcher") {
+                graph.setNodeAttribute(clickedNode, 'color', GRAY);
+              }
+          }
+        })
 
     return null;
     };
@@ -156,28 +161,14 @@ const AuthorGraph = ({jsonData, name}) => {
         </ControlsContainer>
         <ForceGraph />
       </SigmaContainer>
-      <Modal isOpen = {isModalOpen} onRequestClose={() => setIsModalOpen(false)} style={customStyles}>
-        <h2>Info</h2>
-        <div> <p> Author Name : {modalContent.label} </p>
-              <p>No. of papers shared with {name} : {modalContent.count_papers}</p>
-              <Dropdown>
-                <Dropdown.Toggle variant="success" id="dropdown-basic">Research Level</Dropdown.Toggle>
-                <Dropdown.Menu>
-                <Dropdown.Item onClick={() => {
-                  setSelectedOption("PhD Student");
-                  }}>PhD Student</Dropdown.Item>
-                <Dropdown.Item onClick={() => {
-                    setSelectedOption("Associate Professor");
-                }}>Associate Professor</Dropdown.Item>
-                <Dropdown.Item onClick={() => {
-                    setSelectedOption("Post Graduate Researcher");
-                }}>Post Graduate Researcher</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-              <p>{selectedOption}</p>
-         </div>
-        <button onClick={() => setIsModalOpen(false)}>Close</button>
-      </Modal>
+      <NodeModal
+        isOpen={isModalOpen}
+        closeModal={() => setIsModalOpen(false)}
+        modalContent={modalContent}
+        selectedOption={selectedOption}
+        setSelectedOption={setSelectedOption}
+        name = {name}
+      />
     </div>
   );
    
