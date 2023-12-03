@@ -1,21 +1,9 @@
-import React, { useEffect, useState } from "react";
 import Graph from "graphology";
-import Sigma from "sigma";
-import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
-import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl, useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from "@react-sigma/core";
-import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import "@react-sigma/core/lib/react-sigma.min.css";
-import debounce from 'lodash/debounce';
-import throttle from 'lodash/throttle';
-import Modal from "react-modal";
 
-
-const RED = "#b22222";
 const ORANGE = "#ff7f50";
 const GRAY = "#E2E2E2";
-
 const jsonData = JSON.parse(localStorage.getItem("authorData"))
-
 export const graph = new Graph();
 let count = 0
 let authors = new Set();

@@ -1,33 +1,24 @@
 import React, { useEffect, useState } from "react";
 import {graph} from "./CreateGraph";
-import Dropdown from 'react-bootstrap/Dropdown';
-import Graph from "graphology";
-import Sigma from "sigma";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl, useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from "@react-sigma/core";
 import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
 import "@react-sigma/core/lib/react-sigma.min.css";
-import debounce from 'lodash/debounce';
-import throttle from 'lodash/throttle';
-import NodeModal from "./NodeModal";
-
-
+import NodeModal from "../Modal/NodeModal"
 
 const RED = "#b22222";
-const ORANGE = "#ff7f50";
+const GREEN = "#008000"
 const GRAY = "#E2E2E2";
 const BLUE = "#00FFFF";
 
 const AuthorGraph = ({jsonData, name}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({label : "", size: 0, x : 0, y: 0, author_name: "", color: "", shared_papers : "", count_papers: 0, selectedOption: "",});
-    // const [graph, setGraph] = useState(null); 
     const [selectedOption, setSelectedOption] = useState(null);
     const [clickedNode, setClickedNode] = useState(null);
-    
 
     const ForceGraph = () => {
-        const { positions, assign } = useLayoutForceAtlas2();
+        const {assign } = useLayoutForceAtlas2();
         const loadGraph = useLoadGraph();
         const registerEvents = useRegisterEvents();
 
@@ -37,7 +28,6 @@ const AuthorGraph = ({jsonData, name}) => {
         const sigma = useSigma();
 
         useEffect(() => {
-          // setGraph(create_graph);
           loadGraph(graph);
           console.log("load graph")
           assign();
@@ -52,9 +42,6 @@ const AuthorGraph = ({jsonData, name}) => {
               setSelectedOption(null)
               setModalContent(graph.getNodeAttributes(event.node));
               setIsModalOpen(true);
-              
-            
-
             },
             enterNode: (event) => {
               setHoveredNode(event.node)
@@ -82,37 +69,14 @@ const AuthorGraph = ({jsonData, name}) => {
                   newData.highlighted = false;
                 }
               }
-              // else if (selectedOption) {
-              //   // Set node color based on selected option
-              //     if (selectedOption === "PhD Student") {
-              //       data.color = BLUE;
-              //       console.log(node);
-              //     } 
-              //     else if (selectedOption === "Associate Professor") {
-              //       //newData.color = BLUE;
-              //     } 
-              //     else if (selectedOption === "Post Graduate Researcher") {
-              //       //newData.color = BLUE;
-              //     }
-              // }
-              
-              // }
               return newData;
             },
             edgeReducer: (edge, data) => {
               const graph = sigma.getGraph();
               const newData = { ...data, hidden: false};
-              // console.log(data)
-      
               if (hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
                 newData.hidden = true;
               }
-              // if (hoveredEdge){
-              //   if (edge === hoveredEdge) {
-              //     newData.color = RED; 
-              //   } 
-              // }
-
               return newData;
             } 
           });
@@ -120,7 +84,6 @@ const AuthorGraph = ({jsonData, name}) => {
 
         useEffect(() => {
           if (selectedOption) {
-            // Set node color based on selected option
               if (selectedOption === "PhD Student") {
                 graph.setNodeAttribute(clickedNode, 'color', BLUE);
                 console.log("selescted option blue")
@@ -129,7 +92,7 @@ const AuthorGraph = ({jsonData, name}) => {
                 graph.setNodeAttribute(clickedNode, 'color', RED);
               } 
               else if (selectedOption === "Post Graduate Researcher") {
-                graph.setNodeAttribute(clickedNode, 'color', GRAY);
+                graph.setNodeAttribute(clickedNode, 'color', GREEN);
               }
           }
         })

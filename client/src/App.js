@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Graph from './Graph';
-import FullGraph from './FullGraph'
+import Graph from './components/Graph/Graph';
+import FullGraph from './components/Graph/FullGraph'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
