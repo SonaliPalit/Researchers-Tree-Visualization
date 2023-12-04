@@ -38,9 +38,10 @@ const NodeModal = ({ isOpen, closeModal, modalContent, selectedOption, setSelect
           <Dropdown>
             <Dropdown.Toggle variant="success" id="dropdown-basic">{selectedOption || `Select Relationship to ${name}`}</Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item onClick={() => handleDropdownChange("PhD Student")}>PhD Student</Dropdown.Item>
-              <Dropdown.Item onClick={() => handleDropdownChange("Associate Professor")}>Associate Professor</Dropdown.Item>
-              <Dropdown.Item onClick={() => handleDropdownChange("Post Graduate Researcher")}>Post Graduate Researcher</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownChange("Co-worker")}>Co-worker</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownChange("Supervisee")}>Supervisee</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownChange("Supervisor")}>Supervisor</Dropdown.Item>
+              <Dropdown.Item onClick={() => handleDropdownChange("External")}>External</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </div>

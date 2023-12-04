@@ -70,6 +70,77 @@ app.get('/api', (req, res) => {
 
 });
 
+// TODO: UPDATE the Database with New Graph Data
+// Create the "relationship" table
+db.run(`
+  CREATE TABLE IF NOT EXISTS "relationship"(
+    "Author" TEXT,
+    "CoAuthor" TEXT,
+    "DOI" TEXT,
+    "Type" TEXT
+  )
+`);
+
+// New endpoint to handle updating nodes and relationships in the database
+app.post('/api/updateGraph', (req, res) => {
+  const updatedGraphData = req.body;
+  updatedGraphData.forEach((nodeData) => {
+    const { author_names, position_number, position_code, affiliation, relationships } = nodeData;
+
+    // Example update query for updating node data
+    const updateNodeQuery = `
+      UPDATE author_paper_position_affiliation
+      SET PositionNumber = ?,
+          PositionCode = ?,
+          Affiliation = ?
+      WHERE author_names = ?;
+    `;
+
+    db.run(updateNodeQuery, [position_number, position_code, affiliation, author_names], (err) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+
+      // Clear existing relationships for the current author
+      const clearRelationshipsQuery = `
+        DELETE FROM relationship
+        WHERE Author = ?;
+      `;
+
+      db.run(clearRelationshipsQuery, [author_names], (err) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+
+        // Check if relationships is defined before attempting to iterate over it
+        if (relationships && Array.isArray(relationships)) {
+          // Insert new relationships into the "relationship" table
+          relationships.forEach((relationship) => {
+            const { coAuthor, DOI, type } = relationship;
+
+            const insertRelationshipQuery = `
+              INSERT INTO relationship (Author, CoAuthor, DOI, Type)
+              VALUES (?, ?, ?, ?);
+            `;
+
+            db.run(insertRelationshipQuery, [author_names, coAuthor, DOI, type], (err) => {
+              if (err) {
+                console.error(`Error inserting relationship for ${author_names} and ${coAuthor}:`, err.message);
+              } else {
+                console.log(`Relationship inserted for ${author_names} and ${coAuthor}`);
+              }
+            });
+          });
+        }
+      });
+    });
+  });
+
+  res.status(200).json({ message: 'Graph and relationships updated successfully.' });
+});
+
 // const query = `
 // SELECT a1.author_names AS author_name,
 // a2.author_names AS co_author,

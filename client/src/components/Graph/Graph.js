@@ -12,6 +12,7 @@ const RED = "#b22222";
 const GREEN = "#008000";
 const GRAY = "#E2E2E2";
 const BLUE = "#00FFFF";
+const PURPLE = "#A020F0";
 
 // Graph for the searched author
 const AuthorGraph = ({ jsonData, name }) => {
@@ -101,14 +102,15 @@ const AuthorGraph = ({ jsonData, name }) => {
     // Update node color based on selected option
     useEffect(() => {
       if (selectedOption) {
-        if (selectedOption === "PhD Student") {
+        if (selectedOption === "Co-worker") {
           graph.setNodeAttribute(clickedNode, 'color', BLUE);
-          console.log("selescted option blue");
-        } else if (selectedOption === "Associate Professor") {
+        } else if (selectedOption === "Supervisee") {
           graph.setNodeAttribute(clickedNode, 'color', RED);
-        } else if (selectedOption === "Post Graduate Researcher") {
+        } else if (selectedOption === "Supervisor") {
           graph.setNodeAttribute(clickedNode, 'color', GREEN);
         }
+      } else if (selectedOption === "External") {
+        graph.setNodeAttribute(clickedNode, 'color', PURPLE);
       }
     });
 
@@ -116,40 +118,99 @@ const AuthorGraph = ({ jsonData, name }) => {
     useEffect(() => {
       if (selectedOption && clickedNode) {
         // Clone the original graph to avoid modifying it directly
-        const updatedGraph = graph.copy();
+        // const updatedGraph = graph.copy();
         // Apply the edited relationship type to the clicked node
-        updatedGraph.setNodeAttribute(clickedNode, 'editedRelationshipType', selectedOption);
+        graph.setNodeAttribute(clickedNode, 'editedRelationshipType', selectedOption);
         // Save the updated graph to state
-        setNewGraph(updatedGraph);
+        // setNewGraph(updatedGraph);
       }
-    }, [selectedOption, clickedNode]);
+    }, []);
 
     return null;
   };
 
+  // // Handle saving the updated graph
+  // const handleSaveGraph = () => {
+  //   // Clone the original graph to avoid modifying it directly
+  //   const updatedGraph = graph.copy();
+  //   // Iterate over the nodes and update the data
+  //   updatedGraph.nodes().forEach((node) => {
+  //     const existingData = updatedGraph.getNodeAttributes(node);
+  //     const newData = { ...existingData };
+  //     // Check if the node has an edited relationship type
+  //     if (newData.editedRelationshipType) {
+  //       // Apply the edited relationship type
+  //       newData.relationshipType = newData.editedRelationshipType;
+  //       // Clear the editedRelationshipType field
+  //       delete newData.editedRelationshipType;
+  //       // Log the updated node's ID and data
+  //       console.log(`Updated node ${node}:`, newData);
+  //     }
+  //     // Save the updated data back to the graph
+  //     updatedGraph.replaceNodeAttributes(node, newData);
+  //   });
+  //   // Save the updated graph to state
+  //   setNewGraph(updatedGraph);
+  // };
+
   // Handle saving the updated graph
-  const handleSaveGraph = () => {
-    // Clone the original graph to avoid modifying it directly
-    const updatedGraph = graph.copy();
-    // Iterate over the nodes and update the data
-    updatedGraph.nodes().forEach((node) => {
-      const existingData = updatedGraph.getNodeAttributes(node);
-      const newData = { ...existingData };
-      // Check if the node has an edited relationship type
-      if (newData.editedRelationshipType) {
-        // Apply the edited relationship type
-        newData.relationshipType = newData.editedRelationshipType;
-        // Clear the editedRelationshipType field
-        delete newData.editedRelationshipType;
-        // Log the updated node's ID and data
-        console.log(`Updated node ${node}:`, newData);
-      }
-      // Save the updated data back to the graph
-      updatedGraph.replaceNodeAttributes(node, newData);
+const handleSaveGraph = () => {
+  const updatedGraph = graph.copy();
+  const updatedGraphData = [];
+
+  // Iterate over the nodes and update the data
+  updatedGraph.nodes().forEach((node) => {
+    const existingData = updatedGraph.getNodeAttributes(node);
+    const newData = { ...existingData };
+
+    // Check if the node has an edited relationship type
+    if (newData.editedRelationshipType) {
+      // Apply the edited relationship type
+      newData.relationshipType = newData.editedRelationshipType;
+      // Clear the editedRelationshipType field
+      delete newData.editedRelationshipType;
+      // Log the updated node's ID and data
+      console.log(`Updated node ${node}:`, newData);
+    }
+
+    // Include relationships and additional node data in the updatedGraphData array
+    updatedGraphData.push({
+      nodeId: node,
+      label: newData.label,
+      color: newData.color,
+      count_papers: newData.count_papers,
+      relationships: newData.relationshipType,
     });
-    // Save the updated graph to state
-    setNewGraph(updatedGraph);
-  };
+
+    // Save the updated data back to the graph
+    updatedGraph.replaceNodeAttributes(node, newData);
+  });
+
+  // Save the updated graph to state
+  setNewGraph(updatedGraph);
+
+  // Send the updated graph data to the server
+  sendUpdatedGraphData(updatedGraphData);
+};
+
+// Function to send the updated graph data to the server
+const sendUpdatedGraphData = (updatedGraphData) => {
+  fetch('http://localhost:1234/api/updateGraph', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updatedGraphData),
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data.message);
+      // Handle success or error messages from the server
+    })
+    .catch(error => {
+      console.error('Error updating graph:', error);
+    });
+};
 
   // Log the newGraph whenever it changes
   useEffect(() => {

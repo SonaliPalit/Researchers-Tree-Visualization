@@ -4,11 +4,21 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 const ORANGE = "#ff7f50";
 const GRAY = "#E2E2E2";
 const jsonData = JSON.parse(localStorage.getItem("authorData"))
+// let jsonData;
+// fetch('http://localhost:1234/api/author?name=Petra+Isenberg')
+//   .then(res => res.json())
+//   .then(data => {
+//     jsonData = data;
+//   })
+//   .catch(error => {
+//     console.error('Error fetching data:', error);
+//   });
 export const graph = new Graph();
 let count = 0
 let authors = new Set();
 console.log("start graph")
 
+console.log(jsonData);
 jsonData.forEach((user) => {
     if (!(authors.has(user.author1))){
       count++
