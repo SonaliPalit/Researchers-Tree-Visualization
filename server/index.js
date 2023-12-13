@@ -60,6 +60,7 @@ app.get('/api', (req, res) => {
 });
 
 // Endpoint to handle updating nodes and relationships in the database
+// Change this to reflect updated DB model
 app.post('/api/updateGraph', (req, res) => {
   const updatedGraphData = req.body;
   updatedGraphData.forEach((nodeData) => {
