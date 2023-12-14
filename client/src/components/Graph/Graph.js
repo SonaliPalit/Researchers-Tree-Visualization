@@ -26,9 +26,9 @@ const AuthorGraph = ({ jsonData, name }) => {
     color: "",
     shared_papers: "",
     count_papers: 0,
-    selectedOption: "",
+    relationships: []
   });
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [updatedRelationships, setUpdatedRelationships] = useState([]);
   const [clickedNode, setClickedNode] = useState(null);
   const [newGraph, setNewGraph] = useState(null);
 
@@ -55,9 +55,11 @@ const AuthorGraph = ({ jsonData, name }) => {
         clickNode: (event) => {
           console.log("click node");
           setClickedNode(event.node);
-          setSelectedOption(null);
           setModalContent(graph.getNodeAttributes(event.node));
           setIsModalOpen(true);
+          setUpdatedRelationships(graph.getNodeAttribute(event.node, 'relationships'));
+          console.log("updated relationships");
+          console.log(updatedRelationships)
         },
         enterNode: (event) => {
           setHoveredNode(event.node);
@@ -99,120 +101,66 @@ const AuthorGraph = ({ jsonData, name }) => {
       });
     }, [setSettings, hoveredNode, sigma]);
 
-    // Update node color based on selected option
+    // Update node color based on the most recent relationship selected
+    // There will be multiple toggle buttons for each relationship
+    // They will be in order of time, so the first button is what will
+    // determine the color of the node clicked
+    // TODO: Fix this
     useEffect(() => {
-      if (selectedOption) {
-        if (selectedOption === "Co-worker") {
+      if (updatedRelationships != null) {
+        if (updatedRelationships[0].type === "Co-worker") {
           graph.setNodeAttribute(clickedNode, 'color', BLUE);
-        } else if (selectedOption === "Supervisee") {
+        } else if (updatedRelationships[0].type === "Supervisee") {
           graph.setNodeAttribute(clickedNode, 'color', RED);
-        } else if (selectedOption === "Supervisor") {
+        } else if (updatedRelationships[0].type === "Supervisor") {
           graph.setNodeAttribute(clickedNode, 'color', GREEN);
+        } else if (updatedRelationships[0].type === "External") {
+          graph.setNodeAttribute(clickedNode, 'color', PURPLE);
         }
-      } else if (selectedOption === "External") {
-        graph.setNodeAttribute(clickedNode, 'color', PURPLE);
+        graph.setNodeAttribute(clickedNode, 'relationships', updatedRelationships);
       }
     });
-
-    // Handle selected option changes
-    useEffect(() => {
-      if (selectedOption && clickedNode) {
-        // Clone the original graph to avoid modifying it directly
-        // const updatedGraph = graph.copy();
-        // Apply the edited relationship type to the clicked node
-        graph.setNodeAttribute(clickedNode, 'editedRelationshipType', selectedOption);
-        // Save the updated graph to state
-        // setNewGraph(updatedGraph);
-      }
-    }, []);
-
-    return null;
   };
 
-  // // Handle saving the updated graph
-  // const handleSaveGraph = () => {
-  //   // Clone the original graph to avoid modifying it directly
-  //   const updatedGraph = graph.copy();
-  //   // Iterate over the nodes and update the data
-  //   updatedGraph.nodes().forEach((node) => {
-  //     const existingData = updatedGraph.getNodeAttributes(node);
-  //     const newData = { ...existingData };
-  //     // Check if the node has an edited relationship type
-  //     if (newData.editedRelationshipType) {
-  //       // Apply the edited relationship type
-  //       newData.relationshipType = newData.editedRelationshipType;
-  //       // Clear the editedRelationshipType field
-  //       delete newData.editedRelationshipType;
-  //       // Log the updated node's ID and data
-  //       console.log(`Updated node ${node}:`, newData);
-  //     }
-  //     // Save the updated data back to the graph
-  //     updatedGraph.replaceNodeAttributes(node, newData);
-  //   });
-  //   // Save the updated graph to state
-  //   setNewGraph(updatedGraph);
-  // };
-
-  // Handle saving the updated graph
-const handleSaveGraph = () => {
-  const updatedGraph = graph.copy();
-  const updatedGraphData = [];
-
-  // Iterate over the nodes and update the data
-  updatedGraph.nodes().forEach((node) => {
-    const existingData = updatedGraph.getNodeAttributes(node);
-    const newData = { ...existingData };
-
-    // Check if the node has an edited relationship type
-    if (newData.editedRelationshipType) {
-      // Apply the edited relationship type
-      newData.relationshipType = newData.editedRelationshipType;
-      // Clear the editedRelationshipType field
-      delete newData.editedRelationshipType;
-      // Log the updated node's ID and data
-      console.log(`Updated node ${node}:`, newData);
-    }
-
-    // Include relationships and additional node data in the updatedGraphData array
-    updatedGraphData.push({
-      nodeId: node,
-      label: newData.label,
-      color: newData.color,
-      count_papers: newData.count_papers,
-      relationships: newData.relationshipType,
+    // Handle saving the updated graph
+  const handleSaveGraph = () => {
+    const updatedGraph = graph.copy();
+    const updatedGraphData = [];
+    updatedGraph.nodes().forEach((node) => {
+      const existingData = updatedGraph.getNodeAttributes(node);
+      const newData = { ...existingData };
+      if (newData.relationships) {
+        console.log(`Updated node ${node}:`, newData.relationships);
+      }
+      updatedGraphData.push({
+        author_name: newData.author_name,
+        relationships: newData.relationships,
+      });
+      updatedGraph.replaceNodeAttributes(node, newData);
     });
+    setNewGraph(updatedGraph);
+    sendUpdatedGraphData(updatedGraphData);
+  };
 
-    // Save the updated data back to the graph
-    updatedGraph.replaceNodeAttributes(node, newData);
-  });
-
-  // Save the updated graph to state
-  setNewGraph(updatedGraph);
-
-  // Send the updated graph data to the server
-  sendUpdatedGraphData(updatedGraphData);
-};
-
-// Function to send the updated graph data to the server
-const sendUpdatedGraphData = (updatedGraphData) => {
-  fetch('http://localhost:1234/api/updateGraph', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(updatedGraphData),
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data.message);
-      // Handle success or error messages from the server
+  // Send the updated graph data to the backend
+  const sendUpdatedGraphData = (updatedGraphData) => {
+    fetch('http://localhost:1234/api/updateGraph', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedGraphData),
     })
-    .catch(error => {
-      console.error('Error updating graph:', error);
-    });
-};
+      .then(response => response.json())
+      .then(data => {
+        console.log(data.message);
+      })
+      .catch(error => {
+        console.error('Error updating graph:', error);
+      });
+  };
 
-  // Log the newGraph whenever it changes
+  // Track the newGraph whenever it changes
   useEffect(() => {
     if (newGraph) {
       console.log("New Graph:", newGraph);
@@ -247,8 +195,8 @@ const sendUpdatedGraphData = (updatedGraphData) => {
         isOpen={isModalOpen}
         closeModal={() => setIsModalOpen(false)}
         modalContent={modalContent}
-        selectedOption={selectedOption}
-        setSelectedOption={setSelectedOption}
+        relationships={updatedRelationships}
+        setRelationships={setUpdatedRelationships}
         name={name}
       />
       <button onClick={handleSaveGraph}>Save Graph</button>

@@ -23,9 +23,8 @@ jsonData.forEach((user) => {
         y: count + 10,
         author_name: user.author1,
         color: ORANGE,
-        count_papers : user.count_paper
-        //shared_papers: user.shared_paper_ids,
-        // affiliation: user.affiliation, 
+        count_papers : user.count_paper,
+        relationships: user.relationships
       });
       authors.add(user.author1) 
     }
@@ -38,12 +37,10 @@ jsonData.forEach((user) => {
         y: count + 10,
         author_name: user.author2,
         color: ORANGE,
-        count_papers : user.count_paper
-        //shared_papers: user.shared_paper_ids,
-        // affiliation: user.affiliation, 
+        count_papers : user.count_paper,
+        relationships: user.relationships
       });
       authors.add(user.author2) 
     }
-    graph.addEdge(user.author1, user.author2, {color: GRAY ,size : user.count_paper*1.25})
-    
+    graph.addEdge(user.author1, user.author2, {color: GRAY, size: user.count_paper * 1.25})
 })
