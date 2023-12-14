@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState } from "react";
 import Modal from "react-modal";
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -25,7 +25,29 @@ const NodeModal = ({ isOpen, closeModal, modalContent, setRelationships, name })
     },
   };
 
-  const handleRelationships = (relationships) => {
+  const [switchValues, setSwitchValues] = useState({
+    'Co-Worker': modalContent.relationships ? modalContent.relationships[0].status: false,
+    'Supervisor': modalContent.relationships ? modalContent.relationships[1].status: false,
+    'Supervisee': modalContent.relationships ? modalContent.relationships[2].status: false,
+    'External': modalContent.relationships ? modalContent.relationships[3].status: false
+  });
+
+  const handleSwitchToggle = (type) => {
+    setSwitchValues((prevValues) => ({
+      ...prevValues,
+      [type]: !prevValues[type],
+    }));
+  };
+
+  const handleRelationships = () => {
+    const relationships = [];
+    for (const [type, value] of Object.entries(switchValues)) {
+      relationships.push({
+        type,
+        status: value
+      });
+    }
+    console.log('Relationships:', relationships);
     setRelationships(relationships);
   };
 
@@ -36,19 +58,25 @@ const NodeModal = ({ isOpen, closeModal, modalContent, setRelationships, name })
         <p> Author Name: {modalContent.label} </p>
         <p>No. of papers shared with {name}: {modalContent.count_papers}</p>
         <div style={customStyles.relationshipContainer}>
-          <FormGroup>
-            <FormControlLabel control={<Switch defaultChecked/>} label="Co-Author" />
-            <FormControlLabel control={<Switch defaultChecked/>} label="Supervisor" />
-            <FormControlLabel control={<Switch defaultChecked/>} label="Supervisee" />
-            <FormControlLabel control={<Switch defaultChecked/>} label="External" />
+        <FormGroup>
+            <FormControlLabel
+              control={<Switch checked={switchValues['Co-Worker']} onChange={() => handleSwitchToggle('Co-Worker')} />}
+              label="Co-Worker"
+            />
+            <FormControlLabel
+              control={<Switch checked={switchValues['Supervisor']} onChange={() => handleSwitchToggle('Supervisor')} />}
+              label="Supervisor"
+            />
+            <FormControlLabel
+              control={<Switch checked={switchValues['Supervisee']} onChange={() => handleSwitchToggle('Supervisee')} />}
+              label="Supervisor"
+            />
+            <FormControlLabel
+              control={<Switch checked={switchValues['External']} onChange={() => handleSwitchToggle('External')} />}
+              label="External"
+            />
           </FormGroup>
-          {/* Add Toggle Buttons for each Relationship Type Based on what modalContent.relationships
-          contains and for each relationship.type set the text to that*/}
-          {/* Set their inital toggle state (True or False Based on 
-            modalContent.relationships using each one's relationship.status t/f value*/}
           <button onClick={handleRelationships}>Save Relationships</button>
-          {/* once the button is pressed the relationships state will be changed 
-          and so the modal next time should reflect this as well*/}
         </div>
       </div>
       <button onClick={closeModal}>Close</button>

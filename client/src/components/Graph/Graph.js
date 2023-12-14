@@ -17,6 +17,7 @@ const PURPLE = "#A020F0";
 // Graph for the searched author
 const AuthorGraph = ({ jsonData, name }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalDataReady, setIsModalDataReady] = useState(false);
   const [modalContent, setModalContent] = useState({
     label: "",
     size: 0,
@@ -26,9 +27,8 @@ const AuthorGraph = ({ jsonData, name }) => {
     color: "",
     shared_papers: "",
     count_papers: 0,
-    relationships: []
+    relationships: null
   });
-  const [updatedRelationships, setUpdatedRelationships] = useState([]);
   const [clickedNode, setClickedNode] = useState(null);
   const [newGraph, setNewGraph] = useState(null);
 
@@ -55,11 +55,18 @@ const AuthorGraph = ({ jsonData, name }) => {
         clickNode: (event) => {
           console.log("click node");
           setClickedNode(event.node);
-          setModalContent(graph.getNodeAttributes(event.node));
+          let testModal = graph.getNodeAttributes(event.node);
+          testModal.relationships = [
+            {type: 'Co-Worker', status: true},
+            {type: 'Supervisor', status: true},
+            {type: 'Supervisee', status: false},
+            {type: 'External', status: false}
+          ];
+          console.log("here is the updated testModal in clickNode");
+          console.log(testModal);
+          setModalContent(testModal);
           setIsModalOpen(true);
-          setUpdatedRelationships(graph.getNodeAttribute(event.node, 'relationships'));
-          console.log("updated relationships");
-          console.log(updatedRelationships)
+          setIsModalDataReady(true);
         },
         enterNode: (event) => {
           setHoveredNode(event.node);
@@ -101,26 +108,26 @@ const AuthorGraph = ({ jsonData, name }) => {
       });
     }, [setSettings, hoveredNode, sigma]);
 
-    // Update node color based on the most recent relationship selected
-    // There will be multiple toggle buttons for each relationship
-    // They will be in order of time, so the first button is what will
-    // determine the color of the node clicked
-    // TODO: Fix this
     useEffect(() => {
-      if (updatedRelationships != null) {
-        if (updatedRelationships[0].type === "Co-worker") {
+      if (modalContent.relationships !== null && clickedNode) {
+        if (modalContent.relationships[0].type === "Co-Worker" && modalContent.relationships[0].status === true) {
           graph.setNodeAttribute(clickedNode, 'color', BLUE);
-        } else if (updatedRelationships[0].type === "Supervisee") {
+        } else if (modalContent.relationships[1].type === "Supervisor" && modalContent.relationships[1].status === true) {
           graph.setNodeAttribute(clickedNode, 'color', RED);
-        } else if (updatedRelationships[0].type === "Supervisor") {
+        } else if (modalContent.relationships[2].type === "Supervisee" && modalContent.relationships[2].status === true) {
           graph.setNodeAttribute(clickedNode, 'color', GREEN);
-        } else if (updatedRelationships[0].type === "External") {
+        } else if (modalContent.relationships[3].type === "External" && modalContent.relationships[3].status === true) {
           graph.setNodeAttribute(clickedNode, 'color', PURPLE);
         }
-        graph.setNodeAttribute(clickedNode, 'relationships', updatedRelationships);
       }
     });
   };
+
+  const saveUpdatedRelationships = (relationships) => {
+    modalContent.relationships = relationships
+    console.log("this is saveupdatedrelationships in graph for this node:", clickedNode, "with these realtionships", relationships)
+    graph.setNodeAttribute(clickedNode, 'relationships', relationships)
+  }
 
     // Handle saving the updated graph
   const handleSaveGraph = () => {
@@ -191,14 +198,15 @@ const AuthorGraph = ({ jsonData, name }) => {
         </ControlsContainer>
         <ForceGraph />
       </SigmaContainer>
-      <NodeModal
-        isOpen={isModalOpen}
-        closeModal={() => setIsModalOpen(false)}
-        modalContent={modalContent}
-        relationships={updatedRelationships}
-        setRelationships={setUpdatedRelationships}
-        name={name}
-      />
+      {isModalDataReady && (
+          <NodeModal
+            isOpen={isModalOpen}
+            closeModal={() => setIsModalOpen(false)}
+            modalContent={modalContent}
+            setRelationships={saveUpdatedRelationships}
+            name={name}
+          />
+        )}
       <button onClick={handleSaveGraph}>Save Graph</button>
     </div>
   );
