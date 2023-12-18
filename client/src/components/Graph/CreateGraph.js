@@ -1,5 +1,6 @@
 import Graph from "graphology";
 import "@react-sigma/core/lib/react-sigma.min.css";
+// import { json } from "body-parser";
 
 const RED = "#b22222";
 const GRAY = "#E2E2E2";
@@ -9,9 +10,14 @@ const GREEN = "#008000";
 
 const jsonData = JSON.parse(localStorage.getItem("authorData"))
 const relationshipData = JSON.parse(localStorage.getItem("relationshipData"))
-// const response = await fetch('http://localhost:1234/api');
+
+// const response = await fetch('http://localhost:1234/api/author?name=Petra+Isenberg');
 // const jsonData = await response.json();
 // console.log(jsonData);
+
+// const res = await fetch('http://localhost:1234/api/relationships?name=Petra+Isenberg');
+// const relationshipData = await res.json();
+// console.log(relationshipData);
 
 export const graph = new Graph();
 let count = 0
