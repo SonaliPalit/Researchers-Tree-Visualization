@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { graph } from "./CreateGraph";
+import Graph from "graphology";
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl, 
         useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from "@react-sigma/core";
 import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
+import louvain from 'graphology-communities-louvain';
 import "@react-sigma/core/lib/react-sigma.min.css";
 import NodeModal from "../Modal/NodeModal";
 
@@ -41,12 +43,62 @@ const AuthorGraph = ({ jsonData, name }) => {
     const [hoveredNode, setHoveredNode] = useState(null);
     const sigma = useSigma();
 
-    // Load graph and set up event handlers when the component mounts
     useEffect(() => {
       loadGraph(graph);
       console.log("load graph");
       assign();
-      console.log(graph);
+
+      // TODO: Clustering By Color
+      // const initialColors = new Set(); 
+      // graph.forEachNode(node => {
+      //   const initialColor = graph.getNodeAttribute(node, 'color');
+      //   initialColors.add(initialColor);
+      // });
+      // const clusteredGraph = new Graph();
+      // initialColors.forEach(initialColor => {
+      //   const nodesInCommunity = [];
+      //   graph.forEachNode(node => {
+      //     const nodeColor = graph.getNodeAttribute(node, 'color');
+      //     if (nodeColor === initialColor) {
+      //       nodesInCommunity.push(node);
+      //       clusteredGraph.addNode(node, graph.getNodeAttributes(node));
+      //     }
+      //   });
+      //   graph.forEachEdge(edge => {
+      //     const [source, target] = graph.extremities(edge);
+      //     if (nodesInCommunity.includes(source) && nodesInCommunity.includes(target)) {
+      //       clusteredGraph.addEdge(source, target, graph.getEdgeAttributes(edge));
+      //     }
+      //   });
+      // });
+      // loadGraph(clusteredGraph);
+
+      // TODO: Clustering By Louvain Community Detection Algorithm
+      const communities = louvain(graph);
+      const clusters = {};
+      Object.entries(communities).forEach(([communityAuthor, communityID]) => {
+        if (!clusters[communityID]) {
+          clusters[communityID] = [];
+        }
+        clusters[communityID].push(communityAuthor);
+      });
+
+      const clusteredGraph = new Graph();
+      Object.values(clusters).forEach(authorsInCommunity => {
+        graph.forEachNode(node => {
+          if (authorsInCommunity.includes(node)) {
+            clusteredGraph.addNode(node, graph.getNodeAttributes(node));
+          }
+        });
+        graph.forEachEdge(edge => {
+          const [source, target] = graph.extremities(edge);
+          if (authorsInCommunity.includes(source) && authorsInCommunity.includes(target)) {
+            clusteredGraph.addEdge(source, target, graph.getEdgeAttributes(edge));
+          }
+        });
+      });
+      loadGraph(clusteredGraph)
+      console.log("load clustered graph");
     }, [loadGraph, assign]);
 
     // Register event handlers for graph interactions

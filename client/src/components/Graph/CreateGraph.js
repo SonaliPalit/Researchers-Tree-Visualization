@@ -8,16 +8,16 @@ const BLUE = "#0047AB";
 const PURPLE = "#A020F0";
 const GREEN = "#008000";
 
-const jsonData = JSON.parse(localStorage.getItem("authorData"))
-const relationshipData = JSON.parse(localStorage.getItem("relationshipData"))
+// const jsonData = JSON.parse(localStorage.getItem("authorData"))
+// const relationshipData = JSON.parse(localStorage.getItem("relationshipData"))
 
-// const response = await fetch('http://localhost:1234/api/author?name=Petra+Isenberg');
-// const jsonData = await response.json();
-// console.log(jsonData);
+const response = await fetch('http://localhost:1234/api/author?name=Petra+Isenberg');
+const jsonData = await response.json();
+console.log(jsonData);
 
-// const res = await fetch('http://localhost:1234/api/relationships?name=Petra+Isenberg');
-// const relationshipData = await res.json();
-// console.log(relationshipData);
+const res = await fetch('http://localhost:1234/api/relationships?name=Petra+Isenberg');
+const relationshipData = await res.json();
+console.log(relationshipData);
 
 export const graph = new Graph();
 let count = 0
