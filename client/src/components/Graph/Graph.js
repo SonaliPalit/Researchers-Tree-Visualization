@@ -4,6 +4,7 @@ import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl, 
         useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from "@react-sigma/core";
 import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/layout-forceatlas2";
+import {useLayoutNoverlap } from "@react-sigma/layout-noverlap";
 import "@react-sigma/core/lib/react-sigma.min.css";
 import NodeModal from "../Modal/NodeModal";
 
@@ -34,12 +35,15 @@ const AuthorGraph = ({ jsonData, name }) => {
 
   // Component for the force-directed graph
   const ForceGraph = () => {
+    //const { assign } = useLayoutForceAtlas2({iterations: 100, settings: {gravity: 1.0, barnesHutOptimize: true}});
     const { assign } = useLayoutForceAtlas2();
     const loadGraph = useLoadGraph();
     const registerEvents = useRegisterEvents();
     const setSettings = useSetSettings();
     const [hoveredNode, setHoveredNode] = useState(null);
     const sigma = useSigma();
+    // const { positions, assign } = useLayoutNoverlap({settings: {expansion: 1.9}})
+
 
     // Load graph and set up event handlers when the component mounts
     useEffect(() => {

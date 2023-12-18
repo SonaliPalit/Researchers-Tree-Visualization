@@ -8,6 +8,7 @@
     "@react-sigma/layout-core": "^3.4.2",
     "@react-sigma/layout-force": "^3.4.2",
     "@react-sigma/layout-forceatlas2": "^3.4.2",
+    "@react-sigma/layout-noverlap": "^3.4.2",
     "@react-sigma/layout-random": "^3.4.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",

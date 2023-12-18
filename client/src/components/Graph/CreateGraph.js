@@ -34,6 +34,7 @@ graph.addNode(authorName, {
       y: count + 10,
       author_name: authorName,
       color: GREEN,
+      relationship: 'self'
 })
 authors.add(authorName) 
 
@@ -47,6 +48,7 @@ relationshipData.forEach((user) => {
       y: count + 10,
       author_name: user['Co-author'],
       color: setColor(user['Type']),
+      relationship: user['Type']
     });
     authors.add(user['Co-author']) 
   }
