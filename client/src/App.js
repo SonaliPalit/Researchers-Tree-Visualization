@@ -8,6 +8,7 @@ function App() {
   const [allData, setAllData] = useState([])
   const [data, setData] = useState([]); //to retrieve from query
   const [authorNameInput, setAuthorName] = useState('')
+  const [relationshipData, setRelationshipData] = useState([]); //to retrieve from query
 
   const handleFullGraph =  () => {
     fetch(`http://localhost:1234/api`)
@@ -37,13 +38,19 @@ function App() {
     .then((data) => setData(data))
     .catch((error) => console.error('Error fetching data:', error));
 
+    fetch(`http://localhost:1234/api/relationships?name=${encodeURIComponent(authorNameInput)}`)
+    .then((response) => response.json())
+    .then((data) => setRelationshipData(data))
+    .catch((error) => console.error('Error fetching data:', error));
   };
+
 
   const graphVis =  () => {
     return (
       <div>
         {/* dont display anything if data not yet filled */}
         {localStorage.setItem("authorData", JSON.stringify(data))}
+        {localStorage.setItem("relationshipData", JSON.stringify(relationshipData))}
         {data.length > 0 && <Graph name={authorNameInput} />} 
         {/* {data.length > 0 && <Graph jsonData={data} name={authorNameInput} />}  */}
       </div>

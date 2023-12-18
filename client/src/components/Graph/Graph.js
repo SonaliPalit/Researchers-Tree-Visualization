@@ -11,7 +11,7 @@ import NodeModal from "../Modal/NodeModal";
 const RED = "#b22222";
 const GREEN = "#008000";
 const GRAY = "#E2E2E2";
-const BLUE = "#00FFFF";
+const BLUE =  "#0047AB";
 const PURPLE = "#A020F0";
 
 // Graph for the searched author
@@ -103,15 +103,16 @@ const AuthorGraph = ({ jsonData, name }) => {
     useEffect(() => {
       if (selectedOption) {
         if (selectedOption === "Co-worker") {
-          graph.setNodeAttribute(clickedNode, 'color', BLUE);
+          graph.setNodeAttribute(clickedNode, 'color', PURPLE);
         } else if (selectedOption === "Supervisee") {
-          graph.setNodeAttribute(clickedNode, 'color', RED);
+          graph.setNodeAttribute(clickedNode, 'color', GRAY);
         } else if (selectedOption === "Supervisor") {
-          graph.setNodeAttribute(clickedNode, 'color', GREEN);
+          graph.setNodeAttribute(clickedNode, 'color', BLUE);
         }
-      } else if (selectedOption === "External") {
-        graph.setNodeAttribute(clickedNode, 'color', PURPLE);
-      }
+        else if (selectedOption === "External") {
+          graph.setNodeAttribute(clickedNode, 'color', RED);
+        }
+      } 
     });
 
     // Handle selected option changes

@@ -34,6 +34,22 @@ app.get('/api/author', (req, res) => {
   });
 });
 
+app.get('/api/relationships', (req, res) => {
+  const authorName = req.query.name;
+  const relationship_query = `
+  SELECT * FROM relationships
+  WHERE Author = ?;
+  `
+  db.all(relationship_query, [authorName], (err, rows) => {
+      if (err) {
+      res.status(500).json({ error: err.message });
+      } else {
+      res.json(rows);
+      }
+  });
+});
+
+
 // Endpoint to handle getting all data
 app.get('/api', (req, res) => {
     const query = `
@@ -55,7 +71,6 @@ app.get('/api', (req, res) => {
       res.json(rows);
       }
   });
-
 
 });
 
