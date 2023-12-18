@@ -3,10 +3,10 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 
 const ORANGE = "#ff7f50";
 const GRAY = "#E2E2E2";
-const jsonData = JSON.parse(localStorage.getItem("authorData"))
-// const response = await fetch('http://localhost:1234/api');
-// const jsonData = await response.json();
-// console.log(jsonData);
+// const jsonData = JSON.parse(localStorage.getItem("authorData"))
+const response = await fetch('http://localhost:1234/api/author?name=Petra+Isenberg');
+const jsonData = await response.json();
+console.log(jsonData);
 
 export const graph = new Graph();
 let count = 0
