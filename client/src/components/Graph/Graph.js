@@ -9,11 +9,12 @@ import "@react-sigma/core/lib/react-sigma.min.css";
 import NodeModal from "../Modal/NodeModal";
 
 // Possible node colors for better visualization
-const RED = "#b22222";
-const GREEN = "#008000";
-const GRAY = "#E2E2E2";
-const BLUE =  "#0047AB";
-const PURPLE = "#A020F0";
+const GREEN = "#c9cba3";
+const YELLOW = "#ffe1a8";
+const RED = "#e26d5c";
+const MAROON = "#723d46";
+const BROWN = "#472d30";
+const GRAY = "#808080"
 
 // Graph for the searched author
 const AuthorGraph = ({ jsonData, name }) => {
@@ -107,11 +108,11 @@ const AuthorGraph = ({ jsonData, name }) => {
     useEffect(() => {
       if (selectedOption) {
         if (selectedOption === "Co-worker") {
-          graph.setNodeAttribute(clickedNode, 'color', PURPLE);
+          graph.setNodeAttribute(clickedNode, 'color', GREEN);
         } else if (selectedOption === "Supervisee") {
-          graph.setNodeAttribute(clickedNode, 'color', GRAY);
+          graph.setNodeAttribute(clickedNode, 'color', YELLOW);
         } else if (selectedOption === "Supervisor") {
-          graph.setNodeAttribute(clickedNode, 'color', BLUE);
+          graph.setNodeAttribute(clickedNode, 'color', MAROON);
         }
         else if (selectedOption === "External") {
           graph.setNodeAttribute(clickedNode, 'color', RED);

@@ -2,11 +2,13 @@ import Graph from "graphology";
 import "@react-sigma/core/lib/react-sigma.min.css";
 // import { json } from "body-parser";
 
-const RED = "#b22222";
-const GRAY = "#E2E2E2";
-const BLUE = "#0047AB";
-const PURPLE = "#A020F0";
-const GREEN = "#008000";
+const GREEN = "#c9cba3";
+const YELLOW = "#ffe1a8";
+const RED = "#e26d5c";
+const MAROON = "#723d46";
+const BROWN = "#472d30";
+
+const GRAY = "#D3D3D3"
 
 const jsonData = JSON.parse(localStorage.getItem("authorData"))
 const relationshipData = JSON.parse(localStorage.getItem("relationshipData"))
@@ -25,9 +27,9 @@ let authors = new Set();
 console.log("start graph")
 
 const setColor = (relationship) => {
-  if (relationship === 'Supervisee') return GRAY;
-  else if(relationship === 'Supervisor') return BLUE;
-  else if (relationship === 'Co-worker') return PURPLE;
+  if (relationship === 'Supervisee') return YELLOW;
+  else if(relationship === 'Supervisor') return MAROON;
+  else if (relationship === 'Co-worker') return GREEN;
   else if (relationship === 'External') return RED;
   else return GREEN;
 }
@@ -39,7 +41,7 @@ graph.addNode(authorName, {
       x: count + 12,
       y: count + 10,
       author_name: authorName,
-      color: GREEN,
+      color: BROWN,
       relationship: 'self'
 })
 authors.add(authorName) 
